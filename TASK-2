@@ -1,0 +1,56 @@
+from PIL import Image
+import numpy as np
+
+def encrypt_image(input_image_path, output_image_path, key):
+    image = Image.open(input_image_path)
+    pixels = np.array(image)
+
+    # Encrypt by swapping pixels and applying a mathematical operation
+    np.random.seed(key)
+    indices = np.arange(pixels.size)
+    np.random.shuffle(indices)
+    shuffled_pixels = pixels.flatten()[indices].reshape(pixels.shape)
+
+    # Apply a basic mathematical operation (e.g., adding the key to pixel values)
+    encrypted_pixels = (shuffled_pixels + key) % 256
+
+    encrypted_image = Image.fromarray(encrypted_pixels.astype(np.uint8))
+    encrypted_image.save(output_image_path)
+    print(f"Image encrypted and saved to {output_image_path}")
+
+def decrypt_image(input_image_path, output_image_path, key):
+    image = Image.open(input_image_path)
+    pixels = np.array(image)
+
+    # Reverse the mathematical operation
+    decrypted_pixels = (pixels - key) % 256
+
+    # Reverse the pixel swapping
+    np.random.seed(key)
+    indices = np.arange(decrypted_pixels.size)
+    np.random.shuffle(indices)
+    unshuffled_pixels = np.zeros_like(decrypted_pixels.flatten())
+    unshuffled_pixels[indices] = decrypted_pixels.flatten()
+    unshuffled_pixels = unshuffled_pixels.reshape(decrypted_pixels.shape)
+
+    decrypted_image = Image.fromarray(unshuffled_pixels.astype(np.uint8))
+    decrypted_image.save(output_image_path)
+    print(f"Image decrypted and saved to {output_image_path}")
+
+def main():
+    choice = input("Would you like to encrypt or decrypt an image? (e/d): ").strip().lower()
+    if choice not in ['e', 'd']:
+        print("Invalid choice! Please choose 'e' to encrypt or 'd' to decrypt.")
+        return
+
+    input_image_path = input("Enter the input image path: ").strip()
+    output_image_path = input("Enter the output image path: ").strip()
+    key = int(input("Enter the encryption/decryption key (integer): ").strip())
+
+    if choice == 'e':
+        encrypt_image(input_image_path, output_image_path, key)
+    else:
+        decrypt_image(input_image_path, output_image_path, key)
+
+if __name__ == "__main__":
+    main()
